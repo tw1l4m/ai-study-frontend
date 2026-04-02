@@ -660,7 +660,11 @@ const ANTHROPIC_KEY = null;
 
 // ── Backend API helpers (proxy vers le serveur Render) ────────────
 async function apiPost(path, body) {
-  const r = await fetch(API_BASE_URL + path, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
+const r = await fetch(API_BASE_URL + path, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(body)
+});
   if(!r.ok) throw new Error('API '+r.status);
   return r.json();
 }
