@@ -650,7 +650,7 @@ html[lang=ar] .auth-submit .spinner{margin-right:0;margin-left:8px}
 <script>
   
 // ── BACKEND URL — remplacez par votre URL Render après déploiement ──
-const API_BASE_URL = 'https://ai-study-backend-mylb.onrender.com/api';
+const API_BASE_URL = 'https://ai-study-backend.onrender.com/api';
 // Exemple: 'https://ai-study-backend.onrender.com/api'
 
 // Anciennes constantes désactivées (tout passe par le backend)
@@ -660,11 +660,7 @@ const ANTHROPIC_KEY = null;
 
 // ── Backend API helpers (proxy vers le serveur Render) ────────────
 async function apiPost(path, body) {
-const r = await fetch(API_BASE_URL + path, {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify(body)
-});
+  const r = await fetch(API_BASE_URL + path, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
   if(!r.ok) throw new Error('API '+r.status);
   return r.json();
 }
@@ -1160,15 +1156,42 @@ function showTyping(bot,id){
 function removeTyping(id){const el=document.getElementById(id);if(el)el.remove()}
 
 function buildMsgs(text){
-  const h=S.chat.slice(-16).map(m=>m.role==='user'?{role:'user',content:m.content}:{role:'assistant',content:`[${m.sender}]: ${m.content}`});
-  h.push({role:'user',content:text});
-  return h;
+  // Gemini requires strict user/model alternation — merge consecutive same-role messages
+  const raw=S.chat.slice(-16).map(m=>m.role==='user'
+    ?{role:'user',content:m.content}
+    :{role:'assistant',content:`[${m.sender}]: ${m.content}`});
+  raw.push({role:'user',content:text});
+
+  // Merge consecutive same-role entries
+  const merged=[];
+  for(const m of raw){
+    if(merged.length>0 && merged[merged.length-1].role===m.role){
+      merged[merged.length-1].content += '\n'+m.content;
+    } else {
+      merged.push({...m});
+    }
+  }
+  // Must start with user
+  if(merged[0] && merged[0].role==='assistant') merged.shift();
+  return merged;
 }
 
 async function callClaude(sys,msgs){
-  // Passe par le backend Render (Gemini)
-  const d=await apiPost('/chat',{system:sys,messages:msgs});
-  return(d.text||'').trim();
+  // Retry up to 3 times with exponential backoff
+  let lastErr;
+  for(let attempt=1;attempt<=3;attempt++){
+    try{
+      const d=await apiPost('/chat',{system:sys,messages:msgs});
+      const txt=(d.text||'').trim();
+      if(txt) return txt;
+      throw new Error('Empty response from AI');
+    }catch(e){
+      lastErr=e;
+      console.warn(`callClaude attempt ${attempt} failed:`,e.message);
+      if(attempt<3) await new Promise(r=>setTimeout(r,attempt*1200));
+    }
+  }
+  throw lastErr;
 }
 
 // ── FIXED sendMessage: queue-based, never double-fires ────────
@@ -1212,8 +1235,17 @@ async function sendMessage(){
     }
   }catch(e){
     removeTyping('typing-'+primary.id);
-    console.error(e);
-    appendBotMsg(primary,t('connErr'));
+    if(secondary) removeTyping('typing-'+secondary.id);
+    console.error('Chat error:',e);
+    // Show a contextual retry message instead of generic error
+    const retryMsgs=[
+      "Sorry, I got a bit distracted — what were you saying?",
+      "Could you repeat that? I want to make sure I understood.",
+      "Hmm, I lost my train of thought. Can you say that again?",
+      "My connection hiccuped — could you resend that?"
+    ];
+    const fallback=retryMsgs[Math.floor(Math.random()*retryMsgs.length)];
+    appendBotMsg(primary, fallback);
   }finally{
     // Unlock
     chatLocked=false;
