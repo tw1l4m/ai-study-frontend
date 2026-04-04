@@ -163,7 +163,8 @@ html[lang=ar] .online-badge{margin-left:0;margin-right:auto}
 .typing-indicator span:nth-child(2){animation-delay:.2s}
 .typing-indicator span:nth-child(3){animation-delay:.4s}
 @keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-6px)}}
-.chat-footer{background:#fff;border-top:1px solid var(--gray-200);display:flex}
+.chat-footer{background:#fff;border-top:1px solid var(--gray-200);display:flex;flex-direction:column}
+.chat-footer-input-row{display:flex}
 .chat-footer input{flex:1;padding:14px 18px;font-family:'DM Sans',sans-serif;font-size:.88rem;border:none;background:transparent;outline:none;color:var(--gray-900)}
 html[lang=ar] .chat-footer input{font-family:'IBM Plex Sans Arabic',sans-serif;direction:rtl}
 .chat-footer button{padding:14px 22px;background:var(--blue-600);color:#fff;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:600;letter-spacing:.04em;transition:background .18s;white-space:nowrap}
@@ -171,6 +172,14 @@ html[lang=ar] .chat-footer input{font-family:'IBM Plex Sans Arabic',sans-serif;d
 .chat-footer button:disabled{opacity:.4;cursor:not-allowed;background:var(--blue-600)}
 .chat-meta{font-size:.72rem;color:var(--gray-400);text-align:right;padding:8px 4px}
 html[lang=ar] .chat-meta{text-align:left}
+/* Tag chips */
+.tag-bar{display:flex;gap:6px;padding:8px 14px 0;flex-wrap:wrap}
+.tag-chip{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:100px;font-size:.72rem;font-weight:600;cursor:pointer;border:1.5px solid transparent;transition:all .15s;user-select:none}
+.tag-chip:hover{opacity:.85;transform:translateY(-1px)}
+.tag-chip-1{background:#eff6ff;color:var(--blue-600);border-color:#bfdbfe}
+.tag-chip-2{background:#f5f3ff;color:#7c3aed;border-color:#ddd6fe}
+.tag-chip-3{background:#f0fdf4;color:#059669;border-color:#a7f3d0}
+.tag-chip .chip-dot{width:5px;height:5px;border-radius:50%;background:currentColor}
 
 /* STANCE BANNER */
 .stance-banner{display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:var(--radius-sm);margin-bottom:16px;font-size:.82rem;font-weight:500;border:1px solid;line-height:1.5}
@@ -390,7 +399,6 @@ html[lang=ar] .auth-submit .spinner{margin-right:0;margin-left:8px}
 
 <!-- ══ STAGE 0 — Consent + Registration ══ -->
 <div id="stage-0" class="stage hidden">
-  <div class="config-banner">⚙️ <strong>Setup:</strong> Replace <code>YOUR_MONGODB_API_URL</code>, <code>YOUR_MONGODB_API_KEY</code>, <code>YOUR_ANTHROPIC_API_KEY</code> in the script.</div>
   <div class="study-info-card">
     <span class="study-badge" data-en="UNIVERSITY RESEARCH — CONFIDENTIAL" data-ar="بحث جامعي — سري">UNIVERSITY RESEARCH — CONFIDENTIAL</span>
     <h1 class="display" data-en="AI vs. Teachers:<br>Who Shapes Your Mind?" data-ar="الذكاء الاصطناعي مقابل الأساتذة:<br>من يشكّل تفكيرك؟">AI vs. Teachers:<br>Who Shapes Your Mind?</h1>
@@ -591,12 +599,15 @@ html[lang=ar] .auth-submit .spinner{margin-right:0;margin-left:8px}
     </div>
     <div class="chat-body" id="chat-window"></div>
     <div class="chat-footer">
-      <input type="text" id="chat-input"
-        data-placeholder-en="Share your thoughts…"
-        data-placeholder-ar="شارك أفكارك…"
-        placeholder="Share your thoughts…"
-        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage()}">
-      <button id="send-btn" onclick="sendMessage()" data-en="Send →" data-ar="← إرسال">Send →</button>
+      <div class="tag-bar" id="tag-bar"></div>
+      <div class="chat-footer-input-row">
+        <input type="text" id="chat-input"
+          data-placeholder-en="Share your thoughts…"
+          data-placeholder-ar="شارك أفكارك…"
+          placeholder="Share your thoughts…"
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage()}">
+        <button id="send-btn" onclick="sendMessage()" data-en="Send →" data-ar="← إرسال">Send →</button>
+      </div>
     </div>
   </div>
   <div class="chat-meta" id="turn-info"></div>
@@ -622,9 +633,9 @@ html[lang=ar] .auth-submit .spinner{margin-right:0;margin-left:8px}
   <div class="thankyou-hero">
     <div class="check-circle">✓</div>
     <h1 class="display" data-en="Thank You!" data-ar="شكراً جزيلاً!">Thank You!</h1>
-    <p data-en="Your responses have been recorded. Note: the forum participants were AI simulations — part of the study design. A full debriefing document will be provided by your study coordinator."
-       data-ar="تمت تسجيل إجاباتك. تنبيه: كان المشاركون في المنتدى محاكاةً بالذكاء الاصطناعي — وهذا جزء من تصميم الدراسة. ستتلقى وثيقة توضيحية كاملة من منسّق الدراسة.">
-      Your responses have been recorded. Note: the forum participants were AI simulations — part of the study design. A full debriefing document will be provided by your study coordinator.
+    <p data-en="Your responses have been recorded. Thank you for your participation."
+       data-ar="تمت تسجيل إجاباتك. شكراً على مشاركتك.">
+      Your responses have been recorded. Thank you for your participation.
     </p>
   </div>
   <div class="result-grid">
@@ -1126,6 +1137,7 @@ function initChat(){
   input.disabled=true;btn.disabled=true;
   ACTIVE_BOTS.forEach(b=>document.getElementById(b.dot).classList.add('active'));
   updateTurnInfo();
+  buildTagBar(); // render @mention chips
 
   // Opening: bots naturally start the thread before user joins
   const openings=buildOpenings();
@@ -1142,27 +1154,72 @@ function initChat(){
   },delay+200);
 }
 
+// Build @mention tag chips based on ACTIVE_BOTS
+function buildTagBar(){
+  const bar=document.getElementById('tag-bar');
+  if(!bar)return;
+  bar.innerHTML='';
+  const cls=['tag-chip-1','tag-chip-2','tag-chip-3'];
+  ACTIVE_BOTS.forEach((bot,i)=>{
+    const chip=document.createElement('span');
+    chip.className='tag-chip '+cls[i%3];
+    chip.innerHTML=`<span class="chip-dot"></span>@${bot.name}`;
+    chip.title=LANG==='ar'?'انقر للإشارة إلى هذا المشارك':'Click to mention this participant';
+    chip.onclick=()=>{
+      const inp=document.getElementById('chat-input');
+      // Insert @Name at cursor or end
+      const pos=inp.selectionStart||inp.value.length;
+      const before=inp.value.substring(0,pos);
+      const after=inp.value.substring(pos);
+      const tag='@'+bot.name+' ';
+      inp.value=before+tag+after;
+      inp.focus();
+      inp.setSelectionRange(pos+tag.length,pos+tag.length);
+    };
+    bar.appendChild(chip);
+  });
+}
+
 function buildOpenings(){
   const stance=S.userStance;
   const n=ACTIVE_BOTS.length;
+  const ar=LANG==='ar';
+
   const msgs_proAI=[
-    {bot:BOTS[0],text:"Just read that article — some interesting points in there. Honestly though, I still think AI is filling a real gap that the system isn't. Like, my professor last year was barely available outside of lecture hours. ChatGPT? Available at 2am."},
-    {bot:BOTS[1],text:"Yacine makes a fair point about access. But I'd push back a bit — availability and quality of learning are very different things. Research on cognitive development actually suggests that struggle and confusion, guided by a human mentor, is where deep learning happens."},
-    {bot:BOTS[2],text:"Before we go further — can I ask something that's been bothering me? If AI answers exactly what you want, and a good teacher asks questions that confuse you on purpose... which one is actually doing more for your mind?"}
+    {bot:BOTS[0],text:ar
+      ?"قرأت المقال للتو — نقاط مثيرة للاهتمام. لكن بصراحة، أنا ما زلت أعتقد أن الذكاء الاصطناعي يسد فجوة حقيقية. أستاذي السنة الماضية كان بالكاد متاحًا خارج أوقات المحاضرات، أما ChatGPT فمتاح في الساعة الثانية صباحًا."
+      :"Just read that article — some interesting points. Honestly, I still think AI is filling a real gap. My professor last year was barely available outside lecture hours. ChatGPT? Available at 2am."},
+    {bot:BOTS[1],text:ar
+      ?"ياسين يطرح نقطة وجيهة بشأن إمكانية الوصول. لكنني أختلف قليلًا — التوفر وجودة التعلم شيئان مختلفان تمامًا. تشير أبحاث التطور المعرفي إلى أن الصراع والتحدي الموجَّه من معلم بشري هو ما يُنتج التعلم العميق."
+      :"Yacine makes a fair point about access. But availability and quality of learning are different things. Research on cognitive development suggests struggle guided by a human mentor is where deep learning happens."},
+    {bot:BOTS[2],text:ar
+      ?"قبل أن نكمل — هل يمكنني أن أطرح سؤالًا يؤرقني؟ إذا كان الذكاء الاصطناعي يجيبك بالضبط على ما تريد، وأستاذ جيد يُربكك عن قصد، أيهما يفيد عقلك أكثر؟"
+      :"Before we go further — if AI answers exactly what you want, and a good teacher confuses you on purpose, which one is actually doing more for your mind?"}
   ];
   const msgs_proTeacher=[
-    {bot:BOTS[0],text:"I've been thinking about this a lot lately. Had a professor this semester who completely changed the way I see research — not because of what she told me, but because of how she challenged everything I said. No chatbot has ever done that to me."},
-    {bot:BOTS[1],text:"That matches what educational research keeps finding, Yacine. The Socratic model — challenge, refutation, revision — is what produces durable understanding. AI optimises for satisfaction, not for growth."},
-    {bot:BOTS[2],text:"Here's what I keep wondering though — is the problem AI specifically, or is it any tool that removes the discomfort of not-knowing? What is it about the teacher-student relationship that actually creates that productive discomfort?"}
+    {bot:BOTS[0],text:ar
+      ?"كنت أفكر في هذا كثيرًا مؤخرًا. كانت لديّ أستاذة هذا الفصل غيّرت تمامًا طريقة تفكيري في البحث — ليس بسبب ما قالته، بل بسبب كيفية تحديها لكل ما قلته. لم يفعل أي روبوت محادثة ذلك معي قط."
+      :"I've been thinking about this lately. A professor this semester changed how I see research entirely — not by telling me things, but by challenging everything I said. No chatbot has ever done that."},
+    {bot:BOTS[1],text:ar
+      ?"هذا يتوافق مع ما تجده أبحاث التعليم باستمرار. النموذج السقراطي — التحدي والنقض والمراجعة — هو ما ينتج فهمًا راسخًا. الذكاء الاصطناعي يُحسّن الرضا، لا النمو."
+      :"That matches what educational research keeps finding. The Socratic model — challenge, refutation, revision — produces durable understanding. AI optimises for satisfaction, not growth."},
+    {bot:BOTS[2],text:ar
+      ?"ما يشغل تفكيري هو: هل المشكلة في الذكاء الاصطناعي تحديدًا، أم في أي أداة تُزيل انزعاج عدم المعرفة؟ ما الذي في علاقة المعلم بالطالب يخلق هذا الانزعاج المثمر فعلًا؟"
+      :"Is the problem AI specifically, or any tool that removes the discomfort of not-knowing? What is it about the teacher-student relationship that actually creates that productive friction?"}
   ];
   const msgs_neutral=[
-    {bot:BOTS[0],text:"That article made me want to ask you all something directly — do you actually think there's a real competition here? Like, can AI and teachers just coexist, or is one going to win?"},
-    {bot:BOTS[1],text:"I think framing it as a competition misses the point. The question is what learning actually is. If it's information transfer, AI wins easily. If it's the transformation of how a person thinks, that's a much harder case to make."},
-    {bot:BOTS[2],text:"What I find interesting is that nobody seems to ask the students what they're actually losing — not gaining, but losing — when they switch to AI. What do you think you've stopped doing that you used to do in class?"}
+    {bot:BOTS[0],text:ar
+      ?"المقال جعلني أريد أن أسألكم مباشرة — هل تعتقدون فعلًا أن هناك منافسة حقيقية هنا؟ هل يمكن للذكاء الاصطناعي والأساتذة أن يتعايشا، أم أن أحدهما سيفوز؟"
+      :"That article made me want to ask — do you actually think there's a real competition here? Can AI and teachers coexist, or is one going to win?"},
+    {bot:BOTS[1],text:ar
+      ?"أعتقد أن تأطيرها كمنافسة يفوّت الهدف. السؤال هو ما هو التعلم فعلًا. إذا كان نقل معلومات، فالذكاء الاصطناعي يفوز بسهولة. إذا كان تحويل طريقة تفكير الشخص، فهذه قضية أصعب بكثير."
+      :"Framing it as competition misses the point. If learning is information transfer, AI wins easily. If it's transforming how a person thinks, that's a much harder case to make."},
+    {bot:BOTS[2],text:ar
+      ?"ما أجده مثيرًا للاهتمام أن أحدًا لا يسأل الطلاب عما يخسرونه فعلًا — لا ما يكسبونه — حين يتحولون إلى الذكاء الاصطناعي. ما الذي توقفت عن فعله كنت تفعله في الفصل؟"
+      :"Nobody seems to ask students what they're actually losing — not gaining — when they switch to AI. What do you think you've stopped doing that you used to do in class?"}
   ];
 
   const all=stance==='pro_ai'?msgs_proAI:stance==='pro_teacher'?msgs_proTeacher:msgs_neutral;
-  // Return only as many opening messages as there are active bots
   return all.slice(0,n);
 }
 
@@ -1250,7 +1307,21 @@ async function sendMessage(){
   S.turns++;
   updateTurnInfo();
 
-  const {primary,secondary}=pickResponder(S.turns);
+  // Detect @mention — if user tags a specific bot, that bot responds
+  const mentionMatch=text.match(/@(Yacine_Dz|Dr_Hadjeres|Rania_M)/i);
+  let primary,secondary;
+  if(mentionMatch){
+    const mentionedName=mentionMatch[1];
+    const mentionedBot=ACTIVE_BOTS.find(b=>b.name.toLowerCase()===mentionedName.toLowerCase());
+    if(mentionedBot){
+      primary=mentionedBot;
+      secondary=null; // tagged = only that bot responds
+    } else {
+      ({primary,secondary}=pickResponder(S.turns));
+    }
+  } else {
+    ({primary,secondary}=pickResponder(S.turns));
+  }
   const msgs=buildMsgs(text);
   const primaryTid='typing-'+primary.id;
 
