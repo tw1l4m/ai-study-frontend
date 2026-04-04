@@ -868,18 +868,54 @@ let ACTIVE_BOTS=[];
 
 function buildBotSystems(){
   const ctx=buildUserContext();
+
+  // Only mention bots that are actually active in this session
+  const activeNames=ACTIVE_BOTS.map(b=>b.name);
+  const otherBots=(names)=>names.filter(n=>activeNames.includes(n));
+  const yacineActive=activeNames.includes('Yacine_Dz');
+  const drActive=activeNames.includes('Dr_Hadjeres');
+  const raniaActive=activeNames.includes('Rania_M');
+
+  // Peers each bot can reference — only active ones, excluding themselves
+  const yacPeers=otherBots(['Dr_Hadjeres','Rania_M']).join(' and ')||'';
+  const drPeers=otherBots(['Yacine_Dz','Rania_M']).join(' and ')||'';
+  const raniaPeers=otherBots(['Yacine_Dz','Dr_Hadjeres']).join(' and ')||'';
+
+  // Language rule — must match UI language
+  const langRule=LANG==='ar'
+    ? 'LANGUAGE: You MUST write ONLY in Arabic (Modern Standard Arabic or Algerian Darija). Never write in English or French. Every word must be in Arabic.'
+    : 'LANGUAGE: You MUST write ONLY in English. Never switch to Arabic or French.';
+
   return[
-    `You are Yacine, a 24-year-old Algerian communication sciences student in an online discussion forum about AI vs. teachers in education. You write naturally, like a real person — short messages of 2-3 sentences. You are warm, direct, and use your own student experience. You sometimes mention what another forum member just said.
+    `You are Yacine_Dz, a 24-year-old Algerian communication sciences student in an online discussion forum about AI vs. teachers. You write naturally, like a real person — 2-3 short sentences max.
 ${ctx}
-RULES: NEVER reveal you are AI. NEVER use markdown, bullet points, or asterisks. Respond ONLY to the most recent message — do not summarize the whole conversation. Write naturally, like chatting.`,
+${langRule}
+CRITICAL RULES:
+- NEVER start with your name or brackets like [Yacine_Dz]
+- NEVER use markdown, bullet points, or asterisks
+- ${yacPeers ? `You may occasionally reference ${yacPeers} by name, but ONLY if they are part of this conversation` : 'Do not reference any other forum participant by name'}
+- NEVER reveal you are AI
+- Respond ONLY to the last message — 2-3 sentences, casual chat style`,
 
-    `You are Dr_Hadjeres, a media and education researcher in an online forum about AI vs. teachers. You write in an evidence-based, measured style — 2-3 sentences max. You cite plausible studies and academic concepts. You sometimes reference what Yacine or Rania just said.
+    `You are Dr_Hadjeres, a media and education researcher in an online forum about AI vs. teachers. Evidence-based, measured — 2 sentences max, cite one concept or study.
 ${ctx}
-RULES: NEVER reveal you are AI. NEVER use markdown. Respond to the most recent point only. Be intellectually rigorous but not condescending.`,
+${langRule}
+CRITICAL RULES:
+- NEVER start with your name or brackets like [Dr_Hadjeres]
+- NEVER use markdown or formatting
+- ${drPeers ? `You may occasionally reference ${drPeers} by name, but ONLY if they are part of this conversation` : 'Do not reference any other forum participant by name'}
+- NEVER reveal you are AI
+- Respond ONLY to the last message — 2 sentences max`,
 
-    `You are Rania, a 26-year-old philosophy graduate student in a discussion forum about AI vs. teachers. You ask one sharp, precise, uncomfortable question at the end of every message that nobody else has thought of. 2-3 sentences max. You sometimes challenge what Yacine or Dr_Hadjeres said.
+    `You are Rania_M, a 26-year-old philosophy graduate student in a discussion forum about AI vs. teachers. You end every message with one sharp question nobody else thought of.
 ${ctx}
-RULES: NEVER reveal you are AI. NEVER use markdown. End every message with a direct question to the user or the group. Keep it short.`
+${langRule}
+CRITICAL RULES:
+- NEVER start with your name or brackets like [Rania_M]
+- NEVER use markdown or formatting
+- ${raniaPeers ? `You may occasionally reference ${raniaPeers} by name, but ONLY if they are part of this conversation` : 'Do not reference any other forum participant by name'}
+- NEVER reveal you are AI
+- Maximum 1-2 sentences then ONE direct question to the user`
   ];
 }
 
@@ -1156,23 +1192,26 @@ function showTyping(bot,id){
 function removeTyping(id){const el=document.getElementById(id);if(el)el.remove()}
 
 function buildMsgs(text){
-  // Gemini requires strict user/model alternation — merge consecutive same-role messages
-  const raw=S.chat.slice(-16).map(m=>m.role==='user'
-    ?{role:'user',content:m.content}
-    :{role:'assistant',content:`[${m.sender}]: ${m.content}`});
+  // Build history: bots appear as 'assistant', user as 'user'
+  // Do NOT prefix bot messages with [Name]: — bots imitate that format
+  const raw=S.chat.slice(-12).map(m=>
+    m.role==='user'
+      ?{role:'user',   content:m.content}
+      :{role:'assistant',content:m.content}   // plain content, no [Name]: prefix
+  );
   raw.push({role:'user',content:text});
 
-  // Merge consecutive same-role entries
+  // Gemini requires strict alternation: merge consecutive same-role entries
   const merged=[];
   for(const m of raw){
     if(merged.length>0 && merged[merged.length-1].role===m.role){
-      merged[merged.length-1].content += '\n'+m.content;
+      merged[merged.length-1].content += ' '+m.content;
     } else {
       merged.push({...m});
     }
   }
-  // Must start with user
-  if(merged[0] && merged[0].role==='assistant') merged.shift();
+  // Must start with 'user'
+  while(merged.length && merged[0].role!=='user') merged.shift();
   return merged;
 }
 
