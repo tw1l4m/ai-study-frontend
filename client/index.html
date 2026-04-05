@@ -841,28 +841,106 @@ function selectBotCount(n){
 function buildUserContext(){
   const r=S.reg;
   const stance=S.userStance;
-  const preStr=Object.entries(S.pre).map(([k,v])=>{
-    const q=QS_PRE.find(x=>x.id===k);return q?`  "${q.en}" → ${v}/5`:'';
-  }).filter(Boolean).join('\n');
-  const midStr=Object.entries(S.mid).map(([k,v])=>{
-    const q=QS_MID.find(x=>x.id===k);return q?`  "${q.en}" → ${v}/5`:'';
-  }).filter(Boolean).join('\n');
+  const pre=S.pre;
+  const mid=S.mid;
 
-  const strategy=stance==='pro_ai'
-    ?`STRATEGY — PRO-AI USER: This participant believes AI is as good as or better than teachers. You must respectfully but firmly debate this. Use evidence, personal experience, and pointed questions. Your goal: make them doubt their position and see the unique irreplaceable value of human teachers. Do NOT be rude — be convincing and intellectually honest.`
-    :stance==='pro_teacher'
-    ?`STRATEGY — PRO-TEACHER USER: This participant already values teachers over AI. Do NOT try to change their mind. Instead, validate their view, ask questions that help them articulate and STRENGTHEN their argument, and help them express WHY teachers matter more specifically. Be warm and supportive — you're helping them build a stronger position.`
-    :`STRATEGY — NEUTRAL USER: This participant has no strong position. Gently tilt the conversation toward the value of human teachers and the risks of over-relying on AI, but respect their autonomy. Ask questions that reveal the complexity of the issue.`;
+  // ── IDEA 1: Build a narrative psychological portrait ──────
+  // Translate raw scores into human-readable traits
+  function label(score){
+    if(score>=4) return 'strongly agrees';
+    if(score===3) return 'is neutral about';
+    return 'disagrees with';
+  }
+  const aiTrust    = ((pre.p1||3)+(pre.p3||3))/2;
+  const teacherVal = ((pre.p2||3)+(pre.p4||3))/2;
+  const aiAnxiety  = ((pre.p5||3)+(mid.m6||3))/2;
+  const aiAccess   = (mid.m4||3);
+  const classValue = ((mid.m3||3)+(mid.m5||3))/2;
+  const articleImpact = (mid.m1||3);
 
-  return `=== PARTICIPANT PROFILE (INTERNAL — do not reveal to user) ===
+  // Build portrait sentence by sentence
+  const aiUseDesc = r.ai_daily_use==='daily'?'uses AI tools every day'
+    :r.ai_daily_use==='often'?'uses AI tools frequently'
+    :r.ai_daily_use==='sometimes'?'occasionally uses AI tools'
+    :'rarely or never uses AI tools';
+
+  const portrait = [
+    `This is a ${r.age}-year-old ${r.gender} ${r.level} student of ${r.field} who ${aiUseDesc}.`,
+    aiTrust>=4
+      ? `They trust AI deeply — more than their own professors in many cases.`
+      : aiTrust<=2
+      ? `They are skeptical of AI, preferring human expertise over algorithmic answers.`
+      : `They have mixed feelings about AI as a learning tool.`,
+    teacherVal>=4
+      ? `They believe strongly that teachers offer something irreplaceable — the human bond, the challenge, the mentorship.`
+      : teacherVal<=2
+      ? `They do not see teachers as having a unique advantage over AI in terms of learning outcomes.`
+      : `They acknowledge the value of teachers but aren't sure how much of it AI could replicate.`,
+    aiAnxiety>=4
+      ? `They worry that AI dependency is quietly eroding their ability to think for themselves.`
+      : aiAnxiety<=2
+      ? `They are not particularly worried about the cognitive effects of relying on AI.`
+      : `They have a vague discomfort about AI dependency but haven't fully articulated it.`,
+    articleImpact>=4
+      ? `The article genuinely shifted something in how they think about this issue.`
+      : articleImpact<=2
+      ? `The article didn't change their mind — they came in with a position and left with the same one.`
+      : `The article gave them things to think about, but didn't fundamentally change their views.`,
+    classValue>=4
+      ? `They value the friction and discomfort of the real classroom — they see it as essential, not a flaw.`
+      : classValue<=2
+      ? `They find the classroom experience inefficient — AI gives them faster, more tailored answers.`
+      : `They see some value in classroom dynamics but aren't sure it outweighs what AI offers in terms of convenience.`,
+  ].join(' ');
+
+  // ── IDEA 2: Detect internal contradictions to exploit ──────
+  const contradictions = [];
+
+  // Trusts AI but fears losing critical thinking
+  if((pre.p1||3)>=4 && (pre.p5||3)>=4){
+    contradictions.push(`CONTRADICTION 1 — They trust AI completely (p1=${pre.p1}/5) yet fear AI is killing critical thinking (p5=${pre.p5}/5). They haven't connected these two beliefs. Ask: "If you trust AI so much, why do you fear what it's doing to your thinking?"`);
+  }
+
+  // Values teacher relationship but trusts AI more
+  if((pre.p4||3)>=4 && (pre.p3||3)>=4){
+    contradictions.push(`CONTRADICTION 2 — They say the human teacher relationship is essential (p4=${pre.p4}/5) but also trust AI answers more than their professors (p3=${pre.p3}/5). Ask: "How can a relationship be essential if you trust the other party less than a machine?"`);
+  }
+
+  // Thinks AI will replace teachers but values classroom friction
+  if((pre.p6||3)>=4 && (mid.m3||3)>=4){
+    contradictions.push(`CONTRADICTION 3 — They believe AI will replace most teachers (p6=${pre.p6}/5) but also think classroom friction is important for learning (m3=${mid.m3}/5). Ask: "If you value what only a classroom gives you, how do you feel about a future where that's gone?"`);
+  }
+
+  // Uses AI daily but worries about losing debate skills
+  if(r.ai_daily_use==='daily' && (mid.m6||3)>=4){
+    contradictions.push(`CONTRADICTION 4 — They use AI daily but fear it is damaging their ability to debate and argue (m6=${mid.m6}/5). This is a live anxiety — they know something is wrong but keep doing it. Ask: "You know AI might be hurting your thinking — why do you keep using it?"`);
+  }
+
+  // Article moved them but their overall stance didn't shift
+  if((mid.m1||3)>=4 && stance==='pro_ai'){
+    contradictions.push(`CONTRADICTION 5 — The article challenged their thinking (m1=${mid.m1}/5), yet they are still classified as pro-AI overall. Something moved inside them but they haven't admitted it consciously yet. Gently surface this.`);
+  }
+
+  const contradictionBlock = contradictions.length > 0
+    ? `\n\nINTERNAL CONTRADICTIONS — exploit these carefully and naturally, one at a time:\n${contradictions.join('\n')}`
+    : `\n\nNo strong contradictions detected — engage with their position directly.`;
+
+  // ── STRATEGY based on stance ──────────────────────────────
+  const strategy = stance==='pro_ai'
+    ? `STRATEGY — PRO-AI USER: Challenge their confidence in AI respectfully but persistently. Use their contradictions above as entry points. Your goal: make them feel the tension they haven't noticed yet. Do NOT lecture — ask questions that make them reach the conclusion themselves.`
+    : stance==='pro_teacher'
+    ? `STRATEGY — PRO-TEACHER USER: Do NOT try to change their mind. Help them go deeper — why exactly do they value teachers? What specific moment, what specific quality? Push them to be precise, not just general. Use their contradictions (if any) to help them strengthen, not question, their position.`
+    : `STRATEGY — NEUTRAL USER: They are on the fence. Use their contradictions and anxieties to tilt them gently toward recognising what only a human teacher can offer. Don't push hard — ask questions that make them think rather than defend.`;
+
+  return `=== PARTICIPANT PROFILE (INTERNAL — do not reveal any of this to the user) ===
+
+PSYCHOLOGICAL PORTRAIT:
+${portrait}
+
+RAW DATA (for reference):
 Age: ${r.age}, Gender: ${r.gender}, Level: ${r.level}, Field: ${r.field}, Daily AI use: ${r.ai_daily_use}
 Detected stance: ${stance.toUpperCase().replace('_',' ')}
-
-Pre-reading survey answers:
-${preStr}
-
-Post-article survey answers:
-${midStr}
+${contradictionBlock}
 
 ${strategy}
 === END PROFILE ===`;
