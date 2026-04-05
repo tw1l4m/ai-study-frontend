@@ -988,22 +988,22 @@ function buildProfileData(){
   // Detect contradictions
   const contradictions = [];
   if((pre.p1||3)>=4 && (pre.p5||3)>=4)
-    contradictions.push({code:'C1',description:'Trusts AI deeply yet fears AI kills critical thinking',q1:'p1',v1:pre.p1,q2:'p5',v2:pre.p5,suggested_question:'If you trust AI so much, why do you fear what it's doing to your thinking?'});
+    contradictions.push({code:'C1',description:'Trusts AI deeply yet fears AI kills critical thinking',q1:'p1',v1:pre.p1,q2:'p5',v2:pre.p5,suggested_question:"If you trust AI so much, why do you fear what it's doing to your thinking?"});
   if((pre.p4||3)>=4 && (pre.p3||3)>=4)
-    contradictions.push({code:'C2',description:'Values teacher relationship but trusts AI more than professors',q1:'p4',v1:pre.p4,q2:'p3',v2:pre.p3,suggested_question:'How can a relationship be essential if you trust the other party less than a machine?'});
+    contradictions.push({code:'C2',description:'Values teacher relationship but trusts AI more than professors',q1:'p4',v1:pre.p4,q2:'p3',v2:pre.p3,suggested_question:"How can a relationship be essential if you trust the other party less than a machine?"});
   if((pre.p6||3)>=4 && (mid.m3||3)>=4)
-    contradictions.push({code:'C3',description:'Believes AI will replace teachers but values classroom friction',q1:'p6',v1:pre.p6,q2:'m3',v2:mid.m3,suggested_question:'If you value what only a classroom gives you, how do you feel about a future where that's gone?'});
+    contradictions.push({code:'C3',description:'Believes AI will replace teachers but values classroom friction',q1:'p6',v1:pre.p6,q2:'m3',v2:mid.m3,suggested_question:"If you value what only a classroom gives you, how do you feel about a future where that's gone?"});
   if(r.ai_daily_use==='daily' && (mid.m6||3)>=4)
-    contradictions.push({code:'C4',description:'Uses AI daily but fears it damages debating ability',q1:'ai_use',v1:'daily',q2:'m6',v2:mid.m6,suggested_question:'You know AI might be hurting your thinking — why do you keep using it?'});
+    contradictions.push({code:'C4',description:'Uses AI daily but fears it damages debating ability',q1:'ai_use',v1:'daily',q2:'m6',v2:mid.m6,suggested_question:"You know AI might be hurting your thinking — why do you keep using it?"});
   if((mid.m1||3)>=4 && stance==='pro_ai')
-    contradictions.push({code:'C5',description:'Article shifted their thinking but they remain pro-AI',q1:'m1',v1:mid.m1,q2:'stance',v2:stance,suggested_question:'The article moved you — what exactly changed, even a little?'});
+    contradictions.push({code:'C5',description:'Article shifted their thinking but they remain pro-AI',q1:'m1',v1:mid.m1,q2:'stance',v2:stance,suggested_question:"The article moved you — what exactly changed, even a little?"});
 
   // Strategy text
   const strategy = stance==='pro_ai'
-    ?'Challenge their AI confidence using contradictions. Make them feel the tension they haven't noticed. Ask questions that make them reach conclusions themselves.'
+    ?"Challenge their AI confidence using contradictions. Make them feel the tension they haven't noticed. Ask questions that make them reach conclusions themselves."
     :stance==='pro_teacher'
-    ?'Help them go deeper on WHY they value teachers. Push for precision, not generalities. Use contradictions to strengthen their position.'
-    :'Tilt them gently toward recognising what only a human teacher offers. Ask questions that make them think rather than defend.';
+    ?"Help them go deeper on WHY they value teachers. Push for precision, not generalities. Use contradictions to strengthen their position."
+    :"Tilt them gently toward recognising what only a human teacher offers. Ask questions that make them think rather than defend.";
 
   return {
     portrait,
