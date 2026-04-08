@@ -1410,16 +1410,16 @@ function showTyping(bot,id){
 function removeTyping(id){const el=document.getElementById(id);if(el)el.remove()}
 
 function buildMsgs(text){
-  // Build history: bots appear as 'assistant', user as 'user'
-  // Do NOT prefix bot messages with [Name]: — bots imitate that format
-  const raw=S.chat.slice(-12).map(m=>
+  // Hard cap: last 6 messages only — prevents context overflow and token corruption
+  // More history = bigger prompt = corrupted Arabic/garbled responses
+  const raw=S.chat.slice(-6).map(m=>
     m.role==='user'
-      ?{role:'user',   content:m.content}
-      :{role:'assistant',content:m.content}   // plain content, no [Name]: prefix
+      ?{role:'user',    content:m.content}
+      :{role:'assistant',content:m.content}
   );
   raw.push({role:'user',content:text});
 
-  // Gemini requires strict alternation: merge consecutive same-role entries
+  // Merge consecutive same-role entries (required by some models)
   const merged=[];
   for(const m of raw){
     if(merged.length>0 && merged[merged.length-1].role===m.role){
