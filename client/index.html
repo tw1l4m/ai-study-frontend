@@ -606,13 +606,18 @@ html[lang=ar] .auth-submit .spinner{margin-right:0;margin-left:8px}
           data-placeholder-ar="شارك أفكارك…"
           placeholder="Share your thoughts…"
           onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage()}">
-        <button id="send-btn" onclick="sendMessage()" data-en="Send →" data-ar="← إرسال">Send →</button>
+        <button id="send-btn" data-en="Send →" data-ar="← إرسال">Send →</button>
       </div>
     </div>
   </div>
   <div class="chat-meta" id="turn-info"></div>
-  <button class="btn btn-primary btn-block hidden" id="proceed-final-btn" onclick="goToFinalSurvey()" style="margin-top:16px;"
-    data-en="Go to Final Questionnaire →" data-ar="← انتقل إلى الاستبانة النهائية">Go to Final Questionnaire →</button>
+  <div id="chat-action-btns" class="hidden" style="display:none;gap:10px;margin-top:16px;flex-direction:column">
+    <button class="btn btn-primary btn-block" id="proceed-final-btn" onclick="goToFinalSurvey()"
+      data-en="Go to Final Questionnaire →" data-ar="← انتقل إلى الاستبانة النهائية">Go to Final Questionnaire →</button>
+    <button class="btn btn-block" id="end-early-btn" onclick="goToFinalSurvey()"
+      style="background:transparent;border:1.5px solid var(--gray-300);color:var(--gray-500);font-size:.82rem"
+      data-en="End conversation early →" data-ar="← إنهاء المحادثة مبكراً">End conversation early →</button>
+  </div>
 </div>
 
 <!-- ══ STAGE 5 — Survey 3 (Post-Chat) ══ -->
@@ -1299,6 +1304,7 @@ function initChat(){
   ACTIVE_BOTS.forEach(b=>document.getElementById(b.dot).classList.add('active'));
   updateTurnInfo();
   buildTagBar(); // render @mention chips
+  initSendButton(); // wire send button — must be done after chat init
 
   // Opening: bots naturally start the thread before user joins
   const openings=buildOpenings();
@@ -1451,17 +1457,24 @@ async function callClaude(sys,msgs){
   throw lastErr;
 }
 
-// ── FIXED sendMessage: queue-based, never double-fires ────────
+// ── sendMessage — single entry point, never double-fires ────────
+function initSendButton(){
+  const btn=document.getElementById('send-btn');
+  // Wire button once — no onclick in HTML to prevent double-fire
+  btn.addEventListener('click', sendMessage);
+}
+
 async function sendMessage(){
-  if(chatLocked) return; // Prevent double-send
+  if(chatLocked) return;
   const input=document.getElementById('chat-input');
   const text=input.value.trim();if(!text)return;
   const btn=document.getElementById('send-btn');
 
-  // Lock immediately
+  // Lock immediately — single atomic operation
   chatLocked=true;
-  btn.disabled=true;
   input.value='';
+  btn.disabled=true;
+  input.disabled=true;
 
   appendUserMsg(text);
   S.chat.push({role:'user',content:text,ts:Date.now()});
@@ -1520,9 +1533,15 @@ async function sendMessage(){
   }finally{
     // Unlock
     chatLocked=false;
-    btn.disabled=false;
-    input.focus();
-    if(S.turns>=6) document.getElementById('proceed-final-btn').classList.remove('hidden');
+    const btn2=document.getElementById('send-btn');
+    const input2=document.getElementById('chat-input');
+    if(btn2) btn2.disabled=false;
+    if(input2){ input2.disabled=false; input2.focus(); }
+    // Show action buttons after 6 turns
+    if(S.turns>=6){
+      const ab=document.getElementById('chat-action-btns');
+      if(ab){ ab.classList.remove('hidden'); ab.style.display='flex'; }
+    }
   }
 }
 
