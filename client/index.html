@@ -302,7 +302,7 @@ html[lang=ar] .auth-submit .spinner{margin-right:0;margin-left:8px}
 <div id="toast"></div>
 
 <!-- ══ AUTH ══ -->
-<div id="stage-auth" class="hidden">
+<div id="stage-auth">
   <div class="auth-logo-wrap">
     <div class="auth-logo-icon">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 3"/></svg>
@@ -611,27 +611,12 @@ html[lang=ar] .auth-submit .spinner{margin-right:0;margin-left:8px}
     </div>
   </div>
   <div class="chat-meta" id="turn-info"></div>
-  <!-- End conversation button — always visible from start -->
-  <div style="margin-top:14px;display:flex;flex-direction:column;gap:10px" id="chat-action-btns">
-    <!-- Shown only after 6 turns — primary CTA -->
+  <div id="chat-action-btns" class="hidden" style="display:none;gap:10px;margin-top:16px;flex-direction:column">
     <button class="btn btn-primary btn-block" id="proceed-final-btn" onclick="goToFinalSurvey()"
-      style="display:none"
       data-en="Go to Final Questionnaire →" data-ar="← انتقل إلى الاستبانة النهائية">Go to Final Questionnaire →</button>
-    <!-- Always visible — subtle end-early button -->
-    <button class="btn btn-block" id="end-early-btn" onclick="confirmEndChat()"
-      style="background:transparent;border:1.5px solid var(--gray-300);color:var(--gray-500);font-size:.82rem;padding:10px 20px"
-      data-en="✕  End conversation &amp; continue to survey" data-ar="← إنهاء المحادثة والمتابعة للاستبانة">✕  End conversation &amp; continue to survey</button>
-  </div>
-  <!-- Confirm dialog (inline, no position:fixed) -->
-  <div id="end-confirm-wrap" style="display:none;margin-top:10px">
-    <div style="background:#fffbeb;border:1.5px solid #fde68a;border-radius:8px;padding:16px 18px;font-size:.84rem;color:#92400e;line-height:1.6">
-      <strong data-en="End the conversation?" data-ar="إنهاء المحادثة؟">End the conversation?</strong><br>
-      <span data-en="You can end now — the minimum is 6 exchanges for research purposes, but it's your choice." data-ar="يمكنك الإنهاء الآن — الحد الأدنى هو 6 تبادلات لأغراض البحث، لكن الأمر لك.">You can end now — the minimum is 6 exchanges for research purposes, but it's your choice.</span>
-      <div style="display:flex;gap:10px;margin-top:12px">
-        <button onclick="goToFinalSurvey()" class="btn btn-primary" style="flex:1;padding:9px" data-en="Yes, proceed to survey →" data-ar="← نعم، انتقل إلى الاستبانة">Yes, proceed to survey →</button>
-        <button onclick="document.getElementById('end-confirm-wrap').style.display='none'" style="flex:1;padding:9px;background:transparent;border:1.5px solid var(--gray-300);border-radius:6px;cursor:pointer;font-family:inherit;font-size:.84rem;color:var(--gray-500)" data-en="Keep talking" data-ar="استمر في التحدث">Keep talking</button>
-      </div>
-    </div>
+    <button class="btn btn-block" id="end-early-btn" onclick="goToFinalSurvey()"
+      style="background:transparent;border:1.5px solid var(--gray-300);color:var(--gray-500);font-size:.82rem"
+      data-en="End conversation early →" data-ar="← إنهاء المحادثة مبكراً">End conversation early →</button>
   </div>
 </div>
 
@@ -1552,22 +1537,15 @@ async function sendMessage(){
     const input2=document.getElementById('chat-input');
     if(btn2) btn2.disabled=false;
     if(input2){ input2.disabled=false; input2.focus(); }
-    // Show big "Go to final questionnaire" button after 6 turns
+    // Show action buttons after 6 turns
     if(S.turns>=6){
-      const pb=document.getElementById('proceed-final-btn');
-      if(pb) pb.style.display='block';
-      const eb=document.getElementById('end-early-btn');
-      if(eb) eb.style.display='none'; // replace with the primary button
+      const ab=document.getElementById('chat-action-btns');
+      if(ab){ ab.classList.remove('hidden'); ab.style.display='flex'; }
     }
   }
 }
 
-function confirmEndChat(){
-  const wrap=document.getElementById('end-confirm-wrap');
-  if(wrap) wrap.style.display=wrap.style.display==='none'?'block':'none';
-  // Re-apply lang
-  document.querySelectorAll('#end-confirm-wrap [data-en]').forEach(el=>{const v=el.getAttribute('data-'+LANG);if(v)el.innerHTML=v});
-}
+function updateTurnInfo(){
   const rem=Math.max(0,6-S.turns);
   const el=document.getElementById('turn-info');if(!el)return;
   if(rem>0){el.textContent=t('turnRemaining',rem);el.style.color='var(--gray-400)';el.style.fontWeight=''}
@@ -1597,6 +1575,9 @@ async function submitFinalSurvey(){
 }
 
 // ── INIT ──────────────────────────────
+// stage-auth is visible by default (no hidden class in HTML)
+// Hide all other stages explicitly on load
+document.querySelectorAll('.stage').forEach(s => s.classList.add('hidden'));
 document.getElementById('stage-auth').classList.remove('hidden');
 </script>
 </body>
