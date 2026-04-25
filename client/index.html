@@ -611,12 +611,32 @@ html[lang=ar] .auth-submit .spinner{margin-right:0;margin-left:8px}
     </div>
   </div>
   <div class="chat-meta" id="turn-info"></div>
-  <div id="chat-action-btns" class="hidden" style="display:none;gap:10px;margin-top:16px;flex-direction:column">
-    <button class="btn btn-primary btn-block" id="proceed-final-btn" onclick="goToFinalSurvey()"
-      data-en="Go to Final Questionnaire →" data-ar="← انتقل إلى الاستبانة النهائية">Go to Final Questionnaire →</button>
-    <button class="btn btn-block" id="end-early-btn" onclick="goToFinalSurvey()"
-      style="background:transparent;border:1.5px solid var(--gray-300);color:var(--gray-500);font-size:.82rem"
-      data-en="End conversation early →" data-ar="← إنهاء المحادثة مبكراً">End conversation early →</button>
+
+  <!-- ── END CONVERSATION AREA ── always visible ── -->
+  <div style="margin-top:14px">
+    <!-- Big green button — shown only after 6 turns -->
+    <button id="proceed-final-btn" onclick="goToFinalSurvey()"
+      style="display:none;width:100%;padding:13px 20px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-family:inherit;font-size:.95rem;font-weight:600;cursor:pointer;margin-bottom:10px"
+      data-en="✓ Go to Final Questionnaire →" data-ar="← ✓ انتقل إلى الاستبانة النهائية">✓ Go to Final Questionnaire →</button>
+
+    <!-- Subtle end-early button — always visible from turn 1 -->
+    <button id="end-early-btn" onclick="toggleEndConfirm()"
+      style="width:100%;padding:10px 20px;background:transparent;border:1.5px solid #d1d5db;color:#9ca3af;border-radius:8px;font-family:inherit;font-size:.82rem;cursor:pointer"
+      data-en="✕  End conversation &amp; go to survey" data-ar="✕  إنهاء المحادثة والانتقال للاستبانة">✕  End conversation &amp; go to survey</button>
+
+    <!-- Inline confirm box -->
+    <div id="end-confirm-box" style="display:none;margin-top:10px;background:#fffbeb;border:1.5px solid #fde68a;border-radius:8px;padding:14px 16px;font-size:.83rem;color:#92400e;line-height:1.6">
+      <strong data-en="End the conversation?" data-ar="إنهاء المحادثة؟">End the conversation?</strong><br>
+      <span data-en="The minimum for research purposes is 6 exchanges — but you can end now if you wish." data-ar="الحد الأدنى لأغراض البحث هو 6 تبادلات — لكن يمكنك الإنهاء الآن إذا أردت.">The minimum for research purposes is 6 exchanges — but you can end now if you wish.</span>
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <button onclick="goToFinalSurvey()"
+          style="flex:1;padding:9px;background:var(--blue);color:#fff;border:none;border-radius:6px;font-family:inherit;font-size:.83rem;font-weight:600;cursor:pointer"
+          data-en="Yes, proceed →" data-ar="← نعم، تابع">Yes, proceed →</button>
+        <button onclick="toggleEndConfirm()"
+          style="flex:1;padding:9px;background:transparent;border:1.5px solid #d1d5db;color:#6b7280;border-radius:6px;font-family:inherit;font-size:.83rem;cursor:pointer"
+          data-en="Keep talking" data-ar="استمر في التحدث">Keep talking</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1537,12 +1557,26 @@ async function sendMessage(){
     const input2=document.getElementById('chat-input');
     if(btn2) btn2.disabled=false;
     if(input2){ input2.disabled=false; input2.focus(); }
-    // Show action buttons after 6 turns
+    // After 6 turns: show big green button, hide the subtle end-early button
     if(S.turns>=6){
-      const ab=document.getElementById('chat-action-btns');
-      if(ab){ ab.classList.remove('hidden'); ab.style.display='flex'; }
+      const pb=document.getElementById('proceed-final-btn');
+      const eb=document.getElementById('end-early-btn');
+      const cb=document.getElementById('end-confirm-box');
+      if(pb) pb.style.display='block';
+      if(eb) eb.style.display='none';
+      if(cb) cb.style.display='none';
     }
   }
+}
+
+function toggleEndConfirm(){
+  const box=document.getElementById('end-confirm-box');
+  if(!box) return;
+  box.style.display = box.style.display==='none' ? 'block' : 'none';
+  // Re-apply current language to the box
+  box.querySelectorAll('[data-en]').forEach(el=>{
+    const v=el.getAttribute('data-'+LANG); if(v) el.innerHTML=v;
+  });
 }
 
 function updateTurnInfo(){
@@ -1575,8 +1609,6 @@ async function submitFinalSurvey(){
 }
 
 // ── INIT ──────────────────────────────
-// stage-auth is visible by default (no hidden class in HTML)
-// Hide all other stages explicitly on load
 document.querySelectorAll('.stage').forEach(s => s.classList.add('hidden'));
 document.getElementById('stage-auth').classList.remove('hidden');
 </script>
