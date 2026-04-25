@@ -302,7 +302,7 @@ html[lang=ar] .auth-submit .spinner{margin-right:0;margin-left:8px}
 <div id="toast"></div>
 
 <!-- ══ AUTH ══ -->
-<div id="stage-auth">
+<div id="stage-auth" class="hidden">
   <div class="auth-logo-wrap">
     <div class="auth-logo-icon">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 3"/></svg>
@@ -611,33 +611,53 @@ html[lang=ar] .auth-submit .spinner{margin-right:0;margin-left:8px}
     </div>
   </div>
   <div class="chat-meta" id="turn-info"></div>
+  <div id="chat-action-btns" class="hidden" style="display:none;gap:10px;margin-top:16px;flex-direction:column">
+    <button class="btn btn-primary btn-block" id="proceed-final-btn" onclick="goToFinalSurvey()"
+      data-en="Go to Final Questionnaire →" data-ar="← انتقل إلى الاستبانة النهائية">Go to Final Questionnaire →</button>
+    <button class="btn btn-block" id="end-early-btn" onclick="goToFinalSurvey()"
+      style="background:transparent;border:1.5px solid var(--gray-300);color:var(--gray-500);font-size:.82rem"
+      data-en="End conversation early →" data-ar="← إنهاء المحادثة مبكراً">End conversation early →</button>
+  </div>
+</div>
 
-  <!-- ── END CONVERSATION AREA ── always visible ── -->
-  <div style="margin-top:14px">
-    <!-- Big green button — shown only after 6 turns -->
-    <button id="proceed-final-btn" onclick="goToFinalSurvey()"
-      style="display:none;width:100%;padding:13px 20px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-family:inherit;font-size:.95rem;font-weight:600;cursor:pointer;margin-bottom:10px"
-      data-en="✓ Go to Final Questionnaire →" data-ar="← ✓ انتقل إلى الاستبانة النهائية">✓ Go to Final Questionnaire →</button>
+<!-- ══ STAGE 4b — AI REVEAL ══ -->
+<div id="stage-4b" class="stage hidden" style="max-width:560px;margin:0 auto;padding:80px 24px 40px;min-height:100vh;display:flex;flex-direction:column;justify-content:center">
 
-    <!-- Subtle end-early button — always visible from turn 1 -->
-    <button id="end-early-btn" onclick="toggleEndConfirm()"
-      style="width:100%;padding:10px 20px;background:transparent;border:1.5px solid #d1d5db;color:#9ca3af;border-radius:8px;font-family:inherit;font-size:.82rem;cursor:pointer"
-      data-en="✕  End conversation &amp; go to survey" data-ar="✕  إنهاء المحادثة والانتقال للاستبانة">✕  End conversation &amp; go to survey</button>
+  <!-- Dark reveal card matching the thank-you card style -->
+  <div style="background:linear-gradient(135deg,#0f2345 0%,#1a3a6e 60%,#1e3a5f 100%);border-radius:20px;padding:48px 40px;text-align:center;color:#fff;box-shadow:0 24px 60px rgba(15,35,69,.35);margin-bottom:28px">
+    <!-- Robot / AI icon -->
+    <div style="width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,.12);border:2px solid rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;margin:0 auto 24px;font-size:28px">🤖</div>
 
-    <!-- Inline confirm box -->
-    <div id="end-confirm-box" style="display:none;margin-top:10px;background:#fffbeb;border:1.5px solid #fde68a;border-radius:8px;padding:14px 16px;font-size:.83rem;color:#92400e;line-height:1.6">
-      <strong data-en="End the conversation?" data-ar="إنهاء المحادثة؟">End the conversation?</strong><br>
-      <span data-en="The minimum for research purposes is 6 exchanges — but you can end now if you wish." data-ar="الحد الأدنى لأغراض البحث هو 6 تبادلات — لكن يمكنك الإنهاء الآن إذا أردت.">The minimum for research purposes is 6 exchanges — but you can end now if you wish.</span>
-      <div style="display:flex;gap:8px;margin-top:12px">
-        <button onclick="goToFinalSurvey()"
-          style="flex:1;padding:9px;background:var(--blue);color:#fff;border:none;border-radius:6px;font-family:inherit;font-size:.83rem;font-weight:600;cursor:pointer"
-          data-en="Yes, proceed →" data-ar="← نعم، تابع">Yes, proceed →</button>
-        <button onclick="toggleEndConfirm()"
-          style="flex:1;padding:9px;background:transparent;border:1.5px solid #d1d5db;color:#6b7280;border-radius:6px;font-family:inherit;font-size:.83rem;cursor:pointer"
-          data-en="Keep talking" data-ar="استمر في التحدث">Keep talking</button>
-      </div>
+    <h1 style="font-size:2rem;font-weight:700;margin:0 0 12px;letter-spacing:-.02em"
+      data-en="A Quick Reveal" data-ar="كشف مهم">A Quick Reveal</h1>
+
+    <p style="font-size:1rem;opacity:.85;line-height:1.7;margin:0"
+      data-en="The participants you just spoke with — <strong>Dr_Hadjeres</strong>, <strong>Rania_M</strong>, and <strong>Yacine_Dz</strong> — were not real people. They were <strong>AI bots</strong> designed to simulate a realistic forum discussion as part of this research."
+      data-ar="المشاركون الذين تحدثت معهم للتو — <strong>Dr_Hadjeres</strong> و<strong>Rania_M</strong> و<strong>Yacine_Dz</strong> — لم يكونوا أشخاصاً حقيقيين. كانوا <strong>روبوتات ذكاء اصطناعي</strong> مصمَّمة لمحاكاة نقاش منتدى واقعي كجزء من هذا البحث.">
+      The participants you just spoke with — <strong>Dr_Hadjeres</strong>, <strong>Rania_M</strong>, and <strong>Yacine_Dz</strong> — were not real people. They were <strong>AI bots</strong> designed to simulate a realistic forum discussion as part of this research.
+    </p>
+  </div>
+
+  <!-- Question card -->
+  <div style="background:#fff;border:1.5px solid #e5e7eb;border-radius:16px;padding:32px;text-align:center;box-shadow:0 4px 20px rgba(0,0,0,.06)">
+    <p style="font-size:1.05rem;font-weight:600;color:#111827;margin:0 0 8px"
+      data-en="Now that you know — does this change your answers?" data-ar="الآن بعد أن عرفت — هل يغيّر هذا إجاباتك؟">Now that you know — does this change your answers?</p>
+    <p style="font-size:.85rem;color:#6b7280;margin:0 0 24px"
+      data-en="There is no right or wrong answer. Your honest reaction is what matters for the research." data-ar="لا توجد إجابة صحيحة أو خاطئة. ردّ فعلك الصادق هو ما يهم البحث.">There is no right or wrong answer. Your honest reaction is what matters for the research.</p>
+
+    <div style="display:flex;gap:14px;justify-content:center">
+      <button onclick="revealChoice('yes')"
+        style="flex:1;max-width:180px;padding:14px 20px;background:#2563eb;color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:1rem;font-weight:700;cursor:pointer;transition:background .2s"
+        onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'"
+        data-en="✓  Yes" data-ar="✓  نعم">✓  Yes</button>
+
+      <button onclick="revealChoice('no')"
+        style="flex:1;max-width:180px;padding:14px 20px;background:#fff;color:#374151;border:2px solid #d1d5db;border-radius:10px;font-family:inherit;font-size:1rem;font-weight:700;cursor:pointer;transition:border-color .2s"
+        onmouseover="this.style.borderColor='#9ca3af'" onmouseout="this.style.borderColor='#d1d5db'"
+        data-en="✕  No" data-ar="✕  لا">✕  No</button>
     </div>
   </div>
+
 </div>
 
 <!-- ══ STAGE 5 — Survey 3 (Post-Chat) ══ -->
@@ -1227,7 +1247,7 @@ function goTo(n){
   document.querySelectorAll('.stage').forEach(s=>s.classList.add('hidden'));
   document.getElementById('stage-'+n).classList.remove('hidden');
   window.scrollTo({top:0,behavior:'smooth'});
-  const p=[0,14,28,42,60,80,100];
+  const p={0:0,1:14,2:28,3:42,'4b':55,4:60,5:80,6:100};
   document.getElementById('progress-fill').style.width=(p[n]||0)+'%';
 }
 function toast(key){
@@ -1557,26 +1577,12 @@ async function sendMessage(){
     const input2=document.getElementById('chat-input');
     if(btn2) btn2.disabled=false;
     if(input2){ input2.disabled=false; input2.focus(); }
-    // After 6 turns: show big green button, hide the subtle end-early button
+    // Show action buttons after 6 turns
     if(S.turns>=6){
-      const pb=document.getElementById('proceed-final-btn');
-      const eb=document.getElementById('end-early-btn');
-      const cb=document.getElementById('end-confirm-box');
-      if(pb) pb.style.display='block';
-      if(eb) eb.style.display='none';
-      if(cb) cb.style.display='none';
+      const ab=document.getElementById('chat-action-btns');
+      if(ab){ ab.classList.remove('hidden'); ab.style.display='flex'; }
     }
   }
-}
-
-function toggleEndConfirm(){
-  const box=document.getElementById('end-confirm-box');
-  if(!box) return;
-  box.style.display = box.style.display==='none' ? 'block' : 'none';
-  // Re-apply current language to the box
-  box.querySelectorAll('[data-en]').forEach(el=>{
-    const v=el.getAttribute('data-'+LANG); if(v) el.innerHTML=v;
-  });
 }
 
 function updateTurnInfo(){
@@ -1588,6 +1594,14 @@ function updateTurnInfo(){
 
 async function goToFinalSurvey(){
   await mUpdateP(S.pid,{chat_log:S.chat,chat_turns:S.turns,user_stance:S.userStance,bot_count:S.botCount});
+  // Show AI reveal screen before the final survey
+  goTo('4b');
+}
+
+async function revealChoice(answer){
+  // Save whether the reveal changed their mind
+  await mUpdateP(S.pid, { reveal_changed_answers: answer });
+  // Now go to the actual final survey
   renderSurvey('post-survey-questions','post');
   goTo(5);
 }
@@ -1609,7 +1623,6 @@ async function submitFinalSurvey(){
 }
 
 // ── INIT ──────────────────────────────
-document.querySelectorAll('.stage').forEach(s => s.classList.add('hidden'));
 document.getElementById('stage-auth').classList.remove('hidden');
 </script>
 </body>
