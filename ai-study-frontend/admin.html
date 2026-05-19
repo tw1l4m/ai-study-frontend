@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard — AI Study</title>
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">AI vs. Teachers Study</div>
+    <h1 class="login-title">Admin Dashboard</h1>
+    <p class="login-sub">Enter your admin password to access participant data.</p>
+    <div class="login-field">
+      <label>Password</label>
+      <input type="password" id="admin-pw" placeholder="••••••••"
+        onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="login-btn" onclick="doLogin()">Sign In</button>
+    <div class="login-error" id="login-err">Incorrect password. Please try again.</div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+  <div class="topbar">
+    <span class="topbar-logo">Admin</span>
+    <span class="topbar-title">AI vs. Teachers — Research Dashboard</span>
+    <div class="topbar-right">
+      <span class="live-label"><span class="live-dot"></span> Auto-refresh 30s</span>
+      <button class="refresh-btn" onclick="loadAll()">↻ Refresh</button>
+      <button class="logout-btn" onclick="doLogout()">Sign out</button>
+    </div>
+  </div>
+
+  <div class="main">
+    <!-- Stats -->
+    <div class="stats-grid" id="stats-grid">
+      <div class="stat-card"><div class="stat-num" id="s-total">—</div><div class="stat-lbl">Total participants</div></div>
+      <div class="stat-card"><div class="stat-num" id="s-completed">—</div><div class="stat-lbl">Completed study</div></div>
+      <div class="stat-card active"><div class="stat-num" id="s-active">—</div><div class="stat-lbl">Active last 30 min</div></div>
+      <div class="stat-card"><div class="stat-num" id="s-users">—</div><div class="stat-lbl">Registered accounts</div></div>
+      <div class="stat-card shift"><div class="stat-num" id="s-shift">—</div><div class="stat-lbl">Avg opinion shift (pre→post)</div></div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('participants')">Participants</div>
+      <div class="tab" onclick="switchTab('accounts')">Accounts</div>
+      <div class="tab" onclick="switchTab('stances')">Stance analysis</div>
+    </div>
+
+    <!-- Participants tab -->
+    <div class="tab-panel active" id="tab-participants">
+      <div class="search-bar">
+        <input type="text" id="p-search" placeholder="Search by ID, email, field…" oninput="filterParticipants()">
+        <select class="filter-sel" id="p-stance-filter" onchange="filterParticipants()">
+          <option value="">All stances</option>
+          <option value="pro_ai">Pro AI</option>
+          <option value="pro_teacher">Pro Teacher</option>
+          <option value="neutral">Neutral</option>
+        </select>
+        <select class="filter-sel" id="p-complete-filter" onchange="filterParticipants()">
+          <option value="">All</option>
+          <option value="completed">Completed</option>
+          <option value="incomplete">In progress</option>
+        </select>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>ID</th><th>Age/Gender</th><th>Field</th><th>Stance</th>
+            <th>Pre avg</th><th>Post avg</th><th>Shift</th><th>Status</th><th></th>
+          </tr></thead>
+          <tbody id="p-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Accounts tab -->
+    <div class="tab-panel" id="tab-accounts">
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Email</th><th>Name</th><th>Language</th><th>Registered</th><th>Study done</th>
+          </tr></thead>
+          <tbody id="u-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Stance analysis tab -->
+    <div class="tab-panel" id="tab-stances">
+      <div id="stance-analysis" style="display:grid;grid-template-columns:1fr 1fr;gap:16px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Detail panel -->
+<div class="detail-overlay" id="detail-overlay" onclick="if(event.target===this)closeDetail()">
+  <div class="detail-panel" id="detail-panel">
+    <div class="detail-header">
+      <h3 id="detail-title">Participant detail</h3>
+      <button class="close-btn" onclick="closeDetail()">✕</button>
+    </div>
+    <div class="detail-body" id="detail-body"></div>
+  </div>
+</div>
+
+  <!-- Admin logic -->
+  <script src="js/admin/admin.js"></script>
+</body>
+</html>

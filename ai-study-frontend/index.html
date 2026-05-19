@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html id="root-html" lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI vs. Teachers — Research Study</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=IBM+Plex+Sans+Arabic:wght@300;400;600&display=swap" rel="stylesheet">
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div id="topbar">
+  <div class="topbar-logo">Study · AI vs. Teachers</div>
+  <div class="topbar-right">
+    <div class="topbar-user" id="topbar-user">
+      <div class="topbar-avatar" id="topbar-avatar">?</div>
+      <span class="topbar-name" id="topbar-name"></span>
+      <button class="topbar-logout" onclick="logoutUser()" data-en="Sign out" data-ar="خروج">Sign out</button>
+    </div>
+    <div class="lang-toggle">
+      <button class="lang-btn active" id="btn-en" onclick="setLang('en')">EN</button>
+      <button class="lang-btn" id="btn-ar" onclick="setLang('ar')">عربي</button>
+    </div>
+  </div>
+</div>
+<div id="progress-track"><div id="progress-fill"></div></div>
+<div id="toast"></div>
+
+<!-- ══ AUTH ══ -->
+<div id="stage-auth" class="hidden">
+  <div class="auth-logo-wrap">
+    <div class="auth-logo-icon">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 3"/></svg>
+    </div>
+    <div class="auth-logo-title" data-en="AI vs. Teachers Study" data-ar="دراسة: الذكاء الاصطناعي مقابل الأساتذة">AI vs. Teachers Study</div>
+    <div class="auth-logo-sub" data-en="Department of Communication &amp; Media Sciences" data-ar="قسم علوم الإعلام والاتصال">Department of Communication &amp; Media Sciences</div>
+  </div>
+  <div class="auth-card">
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')" data-en="Sign In" data-ar="تسجيل الدخول">Sign In</button>
+      <button class="auth-tab" id="tab-register" onclick="switchAuthTab('register')" data-en="Create Account" data-ar="إنشاء حساب">Create Account</button>
+    </div>
+    <!-- LOGIN -->
+    <div class="auth-panel active" id="panel-login">
+      <div class="auth-title" data-en="Welcome back" data-ar="مرحباً بعودتك">Welcome back</div>
+      <div class="auth-subtitle" data-en="Sign in to continue your session." data-ar="سجّل دخولك لمتابعة جلستك.">Sign in to continue your session.</div>
+      <div class="auth-alert error" id="login-error"></div>
+      <div class="already-banner" id="login-already">
+        <span>✓</span>
+        <div>
+          <strong data-en="Study already completed" data-ar="تمت الدراسة مسبقاً">Study already completed</strong>
+          <span data-en="You have already participated. Thank you!" data-ar="لقد شاركت مسبقاً. شكراً!">You have already participated. Thank you!</span>
+        </div>
+      </div>
+      <div class="auth-field">
+        <label data-en="Email" data-ar="البريد الإلكتروني">Email</label>
+        <div class="auth-field-wrap">
+          <input type="email" id="login-email" data-placeholder-en="your@email.com" data-placeholder-ar="بريدك@example.com" placeholder="your@email.com" autocomplete="email">
+          <span class="field-icon">@</span>
+        </div>
+      </div>
+      <div class="auth-field">
+        <label data-en="Password" data-ar="كلمة المرور">Password</label>
+        <div class="auth-field-wrap">
+          <input type="password" id="login-password" data-placeholder-en="Your password" data-placeholder-ar="كلمة المرور" placeholder="Your password" autocomplete="current-password">
+          <button class="toggle-pw" type="button" onclick="togglePw('login-password',this)" data-en="SHOW" data-ar="إظهار">SHOW</button>
+        </div>
+      </div>
+      <button class="auth-submit" id="login-btn" onclick="loginUser()" data-en="Sign In →" data-ar="← دخول">Sign In →</button>
+      <div class="auth-switch-text">
+        <span data-en="No account?" data-ar="لا تملك حساباً؟">No account?</span>
+        <a onclick="switchAuthTab('register')" data-en="Create one" data-ar="أنشئ حساباً">Create one</a>
+      </div>
+    </div>
+    <!-- REGISTER -->
+    <div class="auth-panel" id="panel-register">
+      <div class="auth-title" data-en="Join the Study" data-ar="انضم إلى الدراسة">Join the Study</div>
+      <div class="auth-subtitle" data-en="Create your account to begin." data-ar="أنشئ حسابك للبدء.">Create your account to begin.</div>
+      <div class="auth-alert error" id="register-error"></div>
+      <div class="auth-alert success" id="register-success"></div>
+      <div class="row-2">
+        <div class="auth-field">
+          <label data-en="First Name" data-ar="الاسم الأول">First Name</label>
+          <div class="auth-field-wrap"><input type="text" id="reg-fname" data-placeholder-en="Yacine" data-placeholder-ar="يسمينة" placeholder="Yacine" autocomplete="given-name"></div>
+          <div class="auth-field-error" id="err-fname" data-en="Required" data-ar="مطلوب">Required</div>
+        </div>
+        <div class="auth-field">
+          <label data-en="Last Name" data-ar="اللقب">Last Name</label>
+          <div class="auth-field-wrap"><input type="text" id="reg-lname" data-placeholder-en="Bensalem" data-placeholder-ar="بن سالم" placeholder="Bensalem" autocomplete="family-name"></div>
+          <div class="auth-field-error" id="err-lname" data-en="Required" data-ar="مطلوب">Required</div>
+        </div>
+      </div>
+      <div class="auth-field">
+        <label data-en="Email" data-ar="البريد الإلكتروني">Email</label>
+        <div class="auth-field-wrap">
+          <input type="email" id="reg-email" data-placeholder-en="your@email.com" data-placeholder-ar="بريدك@example.com" placeholder="your@email.com" autocomplete="email">
+          <span class="field-icon">@</span>
+        </div>
+        <div class="auth-field-error" id="err-email" data-en="Valid email required" data-ar="بريد إلكتروني صحيح مطلوب">Valid email required</div>
+      </div>
+      <div class="auth-field">
+        <label data-en="Password" data-ar="كلمة المرور">Password</label>
+        <div class="auth-field-wrap">
+          <input type="password" id="reg-password" data-placeholder-en="Min. 8 characters" data-placeholder-ar="8 أحرف على الأقل" placeholder="Min. 8 characters" autocomplete="new-password" oninput="checkPwStrength(this.value)">
+          <button class="toggle-pw" type="button" onclick="togglePw('reg-password',this)" data-en="SHOW" data-ar="إظهار">SHOW</button>
+        </div>
+        <div class="pw-strength"><div class="pw-strength-bar" id="bar1"></div><div class="pw-strength-bar" id="bar2"></div><div class="pw-strength-bar" id="bar3"></div><div class="pw-strength-label" id="pw-label"></div></div>
+        <div class="auth-field-error" id="err-password" data-en="Min. 8 characters" data-ar="8 أحرف على الأقل">Min. 8 characters</div>
+      </div>
+      <div class="auth-field">
+        <label data-en="Confirm Password" data-ar="تأكيد كلمة المرور">Confirm Password</label>
+        <div class="auth-field-wrap"><input type="password" id="reg-confirm" data-placeholder-en="Repeat password" data-placeholder-ar="أعد كلمة المرور" placeholder="Repeat password" autocomplete="new-password"></div>
+        <div class="auth-field-error" id="err-confirm" data-en="Passwords do not match" data-ar="كلمتا المرور غير متطابقتين">Passwords do not match</div>
+      </div>
+      <button class="auth-submit" id="register-btn" onclick="registerUser()" data-en="Create Account →" data-ar="← إنشاء الحساب">Create Account →</button>
+      <div class="auth-terms" data-en="By registering you agree to participate in this academic study." data-ar="بالتسجيل توافق على المشاركة في هذه الدراسة الأكاديمية.">By registering you agree to participate in this academic study.</div>
+      <div class="auth-switch-text">
+        <span data-en="Already have an account?" data-ar="هل لديك حساب؟">Already have an account?</span>
+        <a onclick="switchAuthTab('login')" data-en="Sign in" data-ar="تسجيل الدخول">Sign in</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ STAGE 0 — Consent + Registration ══ -->
+<div id="stage-0" class="stage hidden">
+  <div class="study-info-card">
+    <span class="study-badge" data-en="UNIVERSITY RESEARCH — CONFIDENTIAL" data-ar="بحث جامعي — سري">UNIVERSITY RESEARCH — CONFIDENTIAL</span>
+    <h1 class="display" data-en="AI vs. Teachers:<br>Who Shapes Your Mind?" data-ar="الذكاء الاصطناعي مقابل الأساتذة:<br>من يشكّل تفكيرك؟">AI vs. Teachers:<br>Who Shapes Your Mind?</h1>
+    <p data-en="Examining whether AI tools can replace teachers in shaping knowledge and critical thinking among Algerian youth · Department of Communication &amp; Media Sciences" data-ar="دراسة ما إذا كانت أدوات الذكاء الاصطناعي يمكن أن تحل محل الأساتذة في تشكيل المعرفة والتفكير النقدي لدى الشباب الجزائري · قسم علوم الإعلام والاتصال">Examining whether AI tools can replace teachers in shaping knowledge and critical thinking among Algerian youth · Department of Communication &amp; Media Sciences</p>
+    <div class="study-meta">
+      <div class="study-meta-item" data-en="<strong>~25–30 min</strong>" data-ar="<strong>25–30 دقيقة</strong>"><strong>~25–30 min</strong></div>
+      <div class="study-meta-item" data-en="<strong>Anonymous</strong>&nbsp;responses" data-ar="<strong>مجهولة</strong>&nbsp;الإجابات"><strong>Anonymous</strong>&nbsp;responses</div>
+      <div class="study-meta-item" data-en="<strong>Voluntary</strong>" data-ar="<strong>طوعية</strong>"><strong>Voluntary</strong></div>
+    </div>
+  </div>
+  <div class="card consent-card">
+    <h3 data-en="Informed Consent" data-ar="الموافقة المستنيرة">Informed Consent</h3>
+    <ul class="consent-list">
+      <li data-en="Your responses are stored anonymously for research purposes only." data-ar="تُحفظ إجاباتك بشكل مجهول لأغراض بحثية فحسب.">Your responses are stored anonymously for research purposes only.</li>
+      <li data-en="You may withdraw at any time without consequence." data-ar="يمكنك الانسحاب في أي وقت.">You may withdraw at any time without consequence.</li>
+      <li data-en="The study involves reading an article and a discussion with simulated forum participants." data-ar="تشمل الدراسة قراءة مقال والمشاركة في نقاش مع مشاركين محاكَين.">The study involves reading an article and a discussion with simulated forum participants.</li>
+      <li data-en="No personally identifiable data will be published." data-ar="لن تُنشر أي بيانات تعريفية شخصية.">No personally identifiable data will be published.</li>
+    </ul>
+    <div class="consent-check">
+      <input type="checkbox" id="consent-cb">
+      <label for="consent-cb" data-en="I have read and agree to participate." data-ar="قرأت الشروط وأوافق على المشاركة.">I have read and agree to participate.</label>
+    </div>
+  </div>
+  <h2 class="section-title" data-en="Participant Registration" data-ar="تسجيل المشارك">Participant Registration</h2>
+  <div class="row-2">
+    <div class="field">
+      <label data-en="Age" data-ar="السن">Age</label>
+      <input type="number" id="reg-age" min="15" max="40" data-placeholder-en="e.g. 21" data-placeholder-ar="مثال: 21" placeholder="e.g. 21">
+    </div>
+    <div class="field">
+      <label data-en="Gender" data-ar="الجنس">Gender</label>
+      <select id="reg-gender">
+        <option value="" data-en="— Select —" data-ar="— اختر —">— Select —</option>
+        <option value="male" data-en="Male" data-ar="ذكر">Male</option>
+        <option value="female" data-en="Female" data-ar="أنثى">Female</option>
+        <option value="prefer_not" data-en="Prefer not to say" data-ar="أفضل عدم الإفصاح">Prefer not to say</option>
+      </select>
+    </div>
+  </div>
+  <div class="field">
+    <label data-en="Academic Level" data-ar="المستوى الدراسي">Academic Level</label>
+    <select id="reg-level">
+      <option value="" data-en="— Select —" data-ar="— اختر —">— Select —</option>
+      <option value="licence1" data-en="Licence 1" data-ar="ليسانس 1">Licence 1</option>
+      <option value="licence2" data-en="Licence 2" data-ar="ليسانس 2">Licence 2</option>
+      <option value="licence3" data-en="Licence 3" data-ar="ليسانس 3">Licence 3</option>
+      <option value="master1" data-en="Master 1" data-ar="ماستر 1">Master 1</option>
+      <option value="master2" data-en="Master 2" data-ar="ماستر 2">Master 2</option>
+      <option value="doctorat" data-en="Doctorat" data-ar="دكتوراه">Doctorat</option>
+      <option value="other" data-en="Other" data-ar="أخرى">Other</option>
+    </select>
+  </div>
+  <div class="row-2">
+    <div class="field">
+      <label data-en="Field of Study" data-ar="التخصص">Field of Study</label>
+      <input type="text" id="reg-field" data-placeholder-en="e.g. Communication Sciences" data-placeholder-ar="مثال: علوم الإعلام" placeholder="e.g. Communication Sciences">
+    </div>
+    <div class="field">
+      <label data-en="Daily AI Tool Usage" data-ar="الاستخدام اليومي للذكاء الاصطناعي">Daily AI Tool Usage</label>
+      <select id="reg-ai-use">
+        <option value="" data-en="— Select —" data-ar="— اختر —">— Select —</option>
+        <option value="never" data-en="Never" data-ar="لا أستخدم">Never</option>
+        <option value="rarely" data-en="Rarely" data-ar="نادراً">Rarely</option>
+        <option value="sometimes" data-en="Sometimes" data-ar="أحياناً">Sometimes</option>
+        <option value="often" data-en="Often" data-ar="كثيراً">Often</option>
+        <option value="daily" data-en="Every day" data-ar="يومياً">Every day</option>
+      </select>
+    </div>
+  </div>
+  <button class="btn btn-primary btn-block" onclick="submitRegistration()" style="margin-top:8px;" data-en="Begin Study →" data-ar="← ابدأ الدراسة">Begin Study →</button>
+</div>
+
+<!-- ══ STAGE 1 — Survey 1 (Pre) ══ -->
+<div id="stage-1" class="stage hidden">
+  <div class="phase-chip" data-en="Questionnaire 1 of 3 — Before Reading" data-ar="استبانة 1 من 3 — قبل القراءة">Questionnaire 1 of 3 — Before Reading</div>
+  <h1 class="display" data-en="Your Initial Views" data-ar="آراؤك الأولية">Your Initial Views</h1>
+  <p class="subtitle" data-en="Before reading anything, please share your current opinions on AI and teachers. Rate each statement honestly — there are no right or wrong answers." data-ar="قبل قراءة أي شيء، شارك آراءك الحالية حول الذكاء الاصطناعي والأساتذة. قيّم كل عبارة بصدق.">Before reading anything, please share your current opinions on AI and teachers. Rate each statement honestly — there are no right or wrong answers.</p>
+  <div id="pre-survey-questions"></div>
+  <button class="btn btn-primary btn-block" onclick="submitPreSurvey()" data-en="Continue to Article →" data-ar="← متابعة إلى المقال">Continue to Article →</button>
+</div>
+
+<!-- ══ STAGE 2 — Article ══ -->
+<div id="stage-2" class="stage hidden">
+  <div class="phase-chip" data-en="Phase 2 of 6 — Read the Article" data-ar="المرحلة 2 من 6 — اقرأ المقال">Phase 2 of 6 — Read the Article</div>
+  <h1 class="display" data-en="Read &amp; Reflect" data-ar="اقرأ وتأمّل">Read &amp; Reflect</h1>
+  <p class="subtitle" data-en="Read this article carefully. It presents arguments on both sides of the AI vs. teachers debate." data-ar="اقرأ هذا المقال بعناية. يقدّم حججاً من كلا جانبي نقاش الذكاء الاصطناعي مقابل الأساتذة.">Read this article carefully. It presents arguments on both sides of the AI vs. teachers debate.</p>
+
+  <!-- EN Article -->
+  <div id="article-en" class="article-card">
+    <div class="article-topbar"><span>The Algerian Education Review</span><div class="article-dot"></div><span>Technology &amp; Learning</span><div class="article-dot"></div><span>March 2025</span></div>
+    <div class="article-inner">
+      <div class="article-kicker">Education · Artificial Intelligence</div>
+      <h2 class="article-headline">Can AI Replace the Teacher? Algeria's Students Are Finding Out</h2>
+      <div class="article-byline">By Karima Bouzid, Education Correspondent &nbsp;·&nbsp; March 20, 2025 &nbsp;·&nbsp; 7 min read</div>
+      <div class="article-body">
+        <p>Walk into any university library across Algeria today and you will find the same scene: students not reading textbooks, but typing questions into AI chatbots. From Algiers to Oran, from Tizi Ouzou to Constantine, a generation is bypassing the lecture hall and going straight to the machine. The question that educators are now asking — urgently — is whether this is progress, or a quiet catastrophe in the making.</p>
+        <p>The numbers are striking. A 2024 survey by the Arab Media &amp; Society Institute found that <strong>71% of Algerian university students</strong> now consult AI tools at least once a day for academic purposes. More troubling to researchers: 43% said they had changed their opinion on a social or political issue based entirely on an AI response — without seeking a second human opinion.</p>
+        <div class="pullquote">"A teacher who knows your name, who has watched you struggle and grow, who can sense when you are confused — that is irreplaceable. No algorithm does that." — Prof. Nadia Lounès, University of Algiers</div>
+        <p>Supporters of AI in education point to real advantages. Students in remote wilayat who lack qualified teachers in specialist subjects now have access to world-class explanations in Arabic and French at any hour. Students with social anxiety who would never raise their hand in class can ask an AI the same question twenty times without embarrassment. The democratisation argument is powerful.</p>
+        <p>But critics argue the comparison misses what education actually is. "A teacher does not just transmit information," says Dr. Mourad Karim, a pedagogy researcher at the University of Oran. "A teacher challenges you, frustrates you, forces you to defend your ideas in front of your peers. That friction — that discomfort — is where real thinking happens. AI removes the friction. And without friction, there is no growth."</p>
+        <div class="pullquote">"When a student asks AI a question, the AI tries to give them exactly what they want. When a good teacher asks a student a question, they are trying to take away what the student thinks they already know."</div>
+        <p>The research on long-term outcomes is still emerging, but early signals are worrying. Students who rely heavily on AI for essay writing and argumentation show measurably weaker performance in oral examinations and live debates — precisely the settings where a teacher's influence would have trained them. The machine, it seems, teaches compliance, not confrontation.</p>
+        <p>There is also the question of trust. AI systems are trained on global data that may not reflect Algerian history, cultural values, or the specific tensions of a post-colonial society navigating modernity. A teacher from Béjaïa carries knowledge that no dataset can replicate. When a young person asks an AI about their own society, they may receive a technically accurate but culturally hollow answer.</p>
+        <p>The debate will not be resolved soon. But for Algeria's students — caught between an underfunded education system and an infinitely patient machine — the choice they make now about who they learn from may shape not just their careers, but the kind of critical citizens they become.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- AR Article -->
+  <div id="article-ar" class="article-card hidden" style="direction:rtl">
+    <div class="article-topbar" style="letter-spacing:0"><span>مجلة التعليم الجزائري</span><div class="article-dot"></div><span>التكنولوجيا والتعلّم</span><div class="article-dot"></div><span>مارس 2025</span></div>
+    <div class="article-inner">
+      <div class="article-kicker">التعليم · الذكاء الاصطناعي</div>
+      <h2 class="article-headline" style="font-family:'IBM Plex Sans Arabic',sans-serif">هل يمكن للذكاء الاصطناعي أن يحلّ محل الأستاذ؟ طلاب الجزائر يجدون الإجابة</h2>
+      <div class="article-byline">بقلم: كريمة بوزيد، مراسلة التعليم &nbsp;·&nbsp; 20 مارس 2025 &nbsp;·&nbsp; قراءة 7 دقائق</div>
+      <div class="article-body" style="font-family:'IBM Plex Sans Arabic',sans-serif">
+        <p>ادخل إلى أي مكتبة جامعية في الجزائر اليوم، وستجد المشهد نفسه: طلاب لا يقرأون الكتب المدرسية، بل يكتبون أسئلتهم في روبوتات الدردشة الذكية. من الجزائر العاصمة إلى وهران، ومن تيزي وزو إلى قسنطينة، يتجاوز جيل كامل قاعة المحاضرات ويتوجه مباشرة إلى الآلة.</p>
+        <p>الأرقام لافتة: كشف استطلاع أجراه معهد الإعلام والمجتمع العربي عام 2024 أن <strong>71% من طلاب الجامعات الجزائرية</strong> يستشيرون أدوات الذكاء الاصطناعي مرة يومياً على الأقل. والأكثر إثارة للقلق: أفاد 43% منهم بأنهم غيّروا رأيهم في قضية اجتماعية أو سياسية بناءً على رد الذكاء الاصطناعي وحده.</p>
+        <div class="pullquote">«أستاذ يعرف اسمك، يراقب كفاحك ونموك، يشعر بارتباكك — هذا لا يُعوَّض. لا يفعل ذلك أي خوارزمية.» — أ.د. نادية لونيس، جامعة الجزائر</div>
+        <p>يشير المؤيدون للذكاء الاصطناعي في التعليم إلى مزايا حقيقية. الطلاب في الولايات النائية الذين يفتقرون إلى أساتذة متخصصين باتوا يحظون بتفسيرات عالمية المستوى بالعربية والفرنسية في أي وقت. لكن المنتقدين يرون أن المقارنة تغفل ماهية التعليم الحقيقي.</p>
+        <div class="pullquote">«حين يسأل الطالب الذكاءَ الاصطناعي سؤالاً، يحاول الذكاءُ الاصطناعي أن يمنحه ما يريد. حين يسأل المعلمُ الجيد طالبَه سؤالاً، يحاول أن يأخذ منه ما يظن أنه يعرفه.»</div>
+        <p>يُظهر الطلاب الذين يعتمدون بشكل كبير على الذكاء الاصطناعي في الكتابة والحجاج أداءً أضعف ملحوظاً في الامتحانات الشفوية والنقاشات الحية — وهي البيئات ذاتها التي كان الأستاذ يدرّبهم فيها بالضبط. يبدو أن الآلة تعلّم الامتثال لا المواجهة.</p>
+        <p>ثمة أيضاً مسألة الثقة. أنظمة الذكاء الاصطناعي مدرَّبة على بيانات عالمية قد لا تعكس التاريخ الجزائري أو القيم الثقافية. أستاذ من بجاية يحمل معرفة لا تستطيع أي قاعدة بيانات تكرارها.</p>
+        <p>لن يُحسم هذا النقاش قريباً. لكن الطلاب الجزائريين — العالقين بين منظومة تعليمية تحتاج إلى دعم وآلة لا تفقد صبرها أبداً — قد يجد الخيار الذي يتخذونه الآن صدىً في نوع المواطنين الناقدين الذين سيصبحون.</p>
+      </div>
+    </div>
+  </div>
+
+  <label class="read-confirm">
+    <input type="checkbox" id="read-cb">
+    <span data-en="I have finished reading the article carefully." data-ar="لقد انتهيت من قراءة المقال بعناية.">I have finished reading the article carefully.</span>
+  </label>
+  <button class="btn btn-primary btn-block" onclick="submitArticleRead()" style="margin-top:16px;" data-en="Continue →" data-ar="← متابعة">Continue →</button>
+</div>
+
+<!-- ══ STAGE 3 — Survey 2 (Post-Article) ══ -->
+<div id="stage-3" class="stage hidden">
+  <div class="phase-chip" data-en="Questionnaire 2 of 3 — After Reading" data-ar="استبانة 2 من 3 — بعد القراءة">Questionnaire 2 of 3 — After Reading</div>
+  <h1 class="display" data-en="After Reading" data-ar="بعد القراءة">After Reading</h1>
+  <p class="subtitle" data-en="You have just read the article. Has anything shifted? Please re-evaluate the same statements — and also choose how many forum participants you'd like to interact with." data-ar="لقد قرأت المقال للتو. هل تغيّر شيء؟ يرجى إعادة تقييم نفس العبارات — واختر أيضاً عدد المشاركين في المنتدى الذي تريد التفاعل معه.">You have just read the article. Has anything shifted? Please re-evaluate the same statements — and also choose how many forum participants you'd like to interact with.</p>
+  <div id="mid-survey-questions"></div>
+
+  <!-- BOT COUNT PICKER -->
+  <div style="margin-top:28px;margin-bottom:8px;">
+    <h2 class="section-title" data-en="Choose Your Discussion Format" data-ar="اختر تنسيق النقاش">Choose Your Discussion Format</h2>
+    <p class="subtitle" style="margin-bottom:16px;" data-en="How many forum participants do you want to discuss with?" data-ar="كم عدد المشاركين في المنتدى الذي تريد التحدث معهم؟">How many forum participants do you want to discuss with?</p>
+    <div class="bot-picker">
+      <label class="bot-option selected" id="bot-opt-1" onclick="selectBotCount(1)">
+        <input type="radio" name="bot-count" value="1" checked>
+        <div class="bot-option-info">
+          <div class="bot-option-title" data-en="One-on-One" data-ar="محادثة ثنائية">One-on-One</div>
+          <div class="bot-option-desc" data-en="Focused debate with Yacine — a student like you." data-ar="نقاش مركّز مع ياسين — طالب مثلك.">Focused debate with Yacine — a student like you.</div>
+        </div>
+        <div class="bot-avatars"><div class="b-avatar b-av1">YA</div></div>
+      </label>
+      <label class="bot-option" id="bot-opt-2" onclick="selectBotCount(2)">
+        <input type="radio" name="bot-count" value="2">
+        <div class="bot-option-info">
+          <div class="bot-option-title" data-en="Two Participants" data-ar="مشاركان">Two Participants</div>
+          <div class="bot-option-desc" data-en="Yacine (student) + Dr. Hadjeres (researcher) — two perspectives." data-ar="ياسين (طالب) + د. حجرس (باحث) — منظوران مختلفان.">Yacine (student) + Dr. Hadjeres (researcher) — two perspectives.</div>
+        </div>
+        <div class="bot-avatars"><div class="b-avatar b-av1">YA</div><div class="b-avatar b-av2">DR</div></div>
+      </label>
+      <label class="bot-option" id="bot-opt-3" onclick="selectBotCount(3)">
+        <input type="radio" name="bot-count" value="3">
+        <div class="bot-option-info">
+          <div class="bot-option-title" data-en="Full Forum (3 participants)" data-ar="منتدى كامل (3 مشاركين)">Full Forum (3 participants)</div>
+          <div class="bot-option-desc" data-en="Yacine + Dr. Hadjeres + Rania (philosopher) — the richest debate." data-ar="ياسين + د. حجرس + رانيا (فيلسوفة) — أغنى نقاش.">Yacine + Dr. Hadjeres + Rania (philosopher) — the richest debate.</div>
+        </div>
+        <div class="bot-avatars"><div class="b-avatar b-av1">YA</div><div class="b-avatar b-av2">DR</div><div class="b-avatar b-av3">RM</div></div>
+      </label>
+    </div>
+  </div>
+
+  <button class="btn btn-primary btn-block" onclick="submitMidSurvey()" data-en="Enter the Forum →" data-ar="← ادخل المنتدى">Enter the Forum →</button>
+</div>
+
+<!-- ══ STAGE 4 — Chat ══ -->
+<div id="stage-4" class="stage hidden">
+  <div class="phase-chip" data-en="Phase 4 of 6 — Discussion Forum" data-ar="المرحلة 4 من 6 — منتدى النقاش">Phase 4 of 6 — Discussion Forum</div>
+  <h1 class="display" data-en="Join the Conversation" data-ar="انضم إلى النقاش">Join the Conversation</h1>
+  <p class="subtitle" data-en="You've joined a live forum. The other participants have already started discussing. Share your views — agree, disagree, or question." data-ar="لقد انضممت إلى منتدى حيّ. بدأ المشاركون الآخرون النقاش بالفعل. شارك بآرائك — وافق أو اختلف أو اسأل.">You've joined a live forum. The other participants have already started discussing. Share your views — agree, disagree, or question.</p>
+
+  <div class="stance-banner" id="stance-banner" style="display:none"></div>
+
+  <div class="chat-shell">
+    <div class="chat-topbar">
+      <div class="chat-topbar-title">
+        <div class="sub" data-en="Live Discussion Forum" data-ar="منتدى النقاش الحيّ">Live Discussion Forum</div>
+        <div class="name" data-en="AI vs. Teachers — Open Thread" data-ar="الذكاء الاصطناعي مقابل الأساتذة — نقاش مفتوح">AI vs. Teachers — Open Thread</div>
+      </div>
+      <div class="online-badge">
+        <span class="online-label" data-en="LIVE" data-ar="مباشر">LIVE</span>
+        <div class="bot-dot" id="dot-1" style="background:#60a5fa"></div>
+        <div class="bot-dot" id="dot-2" style="background:#a78bfa"></div>
+        <div class="bot-dot" id="dot-3" style="background:#34d399"></div>
+      </div>
+    </div>
+    <div class="chat-body" id="chat-window"></div>
+    <div class="chat-footer">
+      <div class="tag-bar" id="tag-bar"></div>
+      <div class="chat-footer-input-row">
+        <input type="text" id="chat-input"
+          data-placeholder-en="Share your thoughts…"
+          data-placeholder-ar="شارك أفكارك…"
+          placeholder="Share your thoughts…"
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage()}">
+        <button id="send-btn" data-en="Send →" data-ar="← إرسال">Send →</button>
+      </div>
+    </div>
+  </div>
+  <div class="chat-meta" id="turn-info"></div>
+  <div id="chat-action-btns" class="hidden" style="display:none;gap:10px;margin-top:16px;flex-direction:column">
+    <button class="btn btn-primary btn-block" id="proceed-final-btn" onclick="goToFinalSurvey()"
+      data-en="Go to Final Questionnaire →" data-ar="← انتقل إلى الاستبانة النهائية">Go to Final Questionnaire →</button>
+    <button class="btn btn-block" id="end-early-btn" onclick="goToFinalSurvey()"
+      style="background:transparent;border:1.5px solid var(--gray-300);color:var(--gray-500);font-size:.82rem"
+      data-en="End conversation early →" data-ar="← إنهاء المحادثة مبكراً">End conversation early →</button>
+  </div>
+</div>
+
+<!-- ══ STAGE 5 — Survey 3 (Post-Chat) ══ -->
+<div id="stage-5" class="stage hidden">
+  <div class="phase-chip" data-en="Questionnaire 3 of 3 — After Discussion" data-ar="استبانة 3 من 3 — بعد النقاش">Questionnaire 3 of 3 — After Discussion</div>
+  <h1 class="display" data-en="Final Assessment" data-ar="التقييم النهائي">Final Assessment</h1>
+  <p class="subtitle" data-en="After your discussion with the forum participants, please answer these statements one final time. Your honest answers — whatever they are — are what matters for this research." data-ar="بعد نقاشك مع المشاركين، يرجى الإجابة على هذه العبارات مرة أخيرة وأخيرة. إجاباتك الصادقة — مهما كانت — هي ما يهم هذا البحث.">After your discussion with the forum participants, please answer these statements one final time. Your honest answers — whatever they are — are what matters for this research.</p>
+  <div id="post-survey-questions"></div>
+  <div class="field" style="margin-top:28px">
+    <label data-en="Open Reflection — Did the discussion change your views? What stayed the same?" data-ar="تأمل مفتوح — هل غيّر النقاش آراءك؟ ما الذي بقي كما هو؟">Open Reflection — Did the discussion change your views? What stayed the same?</label>
+    <textarea id="open-reflection" data-placeholder-en="Write freely…" data-placeholder-ar="اكتب بحرية…" placeholder="Write freely…"></textarea>
+  </div>
+  <button class="btn btn-primary btn-block" onclick="submitFinalSurvey()" data-en="Submit &amp; Finish →" data-ar="← إرسال وإنهاء">Submit &amp; Finish →</button>
+</div>
+
+<!-- ══ STAGE 6 — Thank You ══ -->
+<div id="stage-6" class="stage hidden">
+  <div class="thankyou-hero">
+    <div class="check-circle">✓</div>
+    <h1 class="display" data-en="Thank You!" data-ar="شكراً جزيلاً!">Thank You!</h1>
+    <p data-en="Your responses have been recorded. Thank you for your participation."
+       data-ar="تمت تسجيل إجاباتك. شكراً على مشاركتك.">
+      Your responses have been recorded. Thank you for your participation.
+    </p>
+  </div>
+  <div class="result-grid">
+    <div class="result-card">
+      <div class="num" id="res-pre">—</div>
+      <div class="lbl" data-en="Questionnaire 1<br>(Before reading)" data-ar="الاستبانة 1<br>(قبل القراءة)">Questionnaire 1<br>(Before reading)</div>
+    </div>
+    <div class="result-card">
+      <div class="num" id="res-mid">—</div>
+      <div class="lbl" data-en="Questionnaire 2<br>(After reading)" data-ar="الاستبانة 2<br>(بعد القراءة)">Questionnaire 2<br>(After reading)</div>
+    </div>
+    <div class="result-card">
+      <div class="num" id="res-post">—</div>
+      <div class="lbl" data-en="Questionnaire 3<br>(After discussion)" data-ar="الاستبانة 3<br>(بعد النقاش)">Questionnaire 3<br>(After discussion)</div>
+    </div>
+  </div>
+  <p style="text-align:center;font-size:.75rem;color:var(--gray-400);margin-top:8px">
+    <span data-en="Participant ID:" data-ar=":رمز المشارك">Participant ID:</span>
+    <strong id="pid-display"></strong>
+  </p>
+</div>
+
+  <!-- ── JavaScript modules — load order matters ── -->
+  <script src="js/config/api.js"></script>
+  <script src="js/config/questions.js"></script>
+  <script src="js/state/store.js"></script>
+  <script src="js/api/language.js"></script>
+  <script src="js/survey/stance.js"></script>
+  <script src="js/survey/profile.js"></script>
+  <script src="js/chat/bots.js"></script>
+  <script src="js/auth/auth.js"></script>
+  <script src="js/ui/helpers.js"></script>
+  <script src="js/survey/flow.js"></script>
+  <script src="js/chat/engine.js"></script>
+  <script src="js/chat/finalSurvey.js"></script>
+  <script>
+    // ── INIT ──────────────────────────────────────────────────────
+    document.querySelectorAll('.stage').forEach(s => s.classList.add('hidden'));
+    document.getElementById('stage-auth').classList.remove('hidden');
+  </script>
+</body>
+</html>
